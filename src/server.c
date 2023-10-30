@@ -12,8 +12,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define BUFFER_SIZE 1024
-#define LOCAL_IP    "127.0.0.1"
+/* Inclusio de fitxers .h propis del projecte */
+#include "sopor.h"
 
 int main ( int argc, char ** argv ) {
 
@@ -30,10 +30,7 @@ int main ( int argc, char ** argv ) {
         if ( sock >= 0 ) {
             printf("[+] - Socket Creado ( puerto %d)...\n", bind_port);
 
-            memset(&server_addr, '\0', sizeof(server_addr) );
-            server_addr.sin_family = AF_INET;
-            server_addr.sin_port   = htons( bind_port );
-            server_addr.sin_addr.s_addr = inet_addr( LOCAL_IP );
+            init_addr( &server_addr, bind_port, LOCAL_IP);
 
             binded = bind( sock, (struct sockaddr *) &server_addr, sizeof(server_addr));
             if ( binded >= 0 ) {
@@ -59,9 +56,7 @@ int main ( int argc, char ** argv ) {
         /* Tanquem el socket */
         close( sock );
     } else {
-        printf("[!] - Nombre de paràmetres incorrecte.\n");
-        printf("Us apropiat:\n");
-        printf("\t./server <port>\n");
+        msg_wrong_param( SERVER );
     }
 
     return 0;

@@ -23,29 +23,25 @@ int main ( int argc, char ** argv ) {
         socklen_t addr_size;
         char buffer[BUFFER_SIZE];
         int bind_port, sock, binded;
-
         /* Fem la feina */
         bind_port = atoi( argv[1] );
-        sock      = socket( AF_INET, SOCK_DGRAM, 0);
+        sock      = init_sock();
         if ( sock >= 0 ) {
-            printf("[+] - Socket Creado ( puerto %d)...\n", bind_port);
-
+            printf("[+] - Socket creado ( :%d )...\n", bind_port);
             init_addr( &server_addr, bind_port, LOCAL_IP);
-
-            binded = bind( sock, (struct sockaddr *) &server_addr, sizeof(server_addr));
+            binded = init_binding( sock, &server_addr );
             if ( binded >= 0 ) {
                 printf("[+] - Binded...\n");
 
                 /* Recibir datos */
                 bzero( buffer, BUFFER_SIZE );
-                addr_size = sizeof(client_addr);
-                recvfrom( sock, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &client_addr, &addr_size);
+                recv_data( sock, buffer, &client_addr, &addr_size);
                 printf("[+] - Data Recv: %s\n", buffer);
 
                 /* Enviar datos de vuelta */
                 bzero( buffer, BUFFER_SIZE );
                 strcpy( buffer, "Tu puta madre jaja");
-                sendto( sock, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&client_addr, sizeof(client_addr));
+                send_data( sock, buffer, &client_addr);
                 printf("[+] - Data Sent: %s\n", buffer);
             } else {
                 printf("[!] - No se pudo realizar el bind().\n");

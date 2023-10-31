@@ -28,28 +28,28 @@ int main( int argc, char ** argv ) {
         /* Fem la feina */
         dest_ip   = argv[1];
         dest_port = atoi( argv[2] );
-        sock      = socket( AF_INET, SOCK_DGRAM, 0);
+        sock      = init_sock();
         if ( sock >= 0 ) {
             printf("[+] - Socket Creado ( puerto %d)...\n", dest_port);
-
             init_addr( &addr, dest_port, dest_ip);
 
             /* Enviar información */
             bzero( buffer, BUFFER_SIZE );
             strcpy( buffer, "Maricones");
-            sendto( sock, buffer, BUFFER_SIZE, 0, (struct sockaddr * )&addr, sizeof(addr) );
+            send_data( sock, buffer, &addr);
             printf("[+] - Data Sent: %s\n", buffer);
 
+            /* Recibir datos */
             bzero( buffer, BUFFER_SIZE );
             addr_size = sizeof(addr);
-            recvfrom( sock, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &addr, &addr_size);
+            recv_data( sock, buffer, &addr, &addr_size);
             printf("[+] - Data Recv: %s\n", buffer);
 
         } else {
             printf("[!] - No se pudo crear el socket.\n");
         }
         /* Tanquem el socket */
-        close( sock );
+        close( sock ); // Tanquem el socket
     } else {
         msg_wrong_param( CLIENT );
     }

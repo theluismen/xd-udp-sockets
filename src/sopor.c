@@ -42,3 +42,33 @@ void msg_wrong_param ( int n ) {
     printf("Us apropiat:\n");
     ( n == 0 ) ? printf("\t./server <port>\n") : printf("\t./server <ip> <port>\n");
 }
+
+void decode_str ( char * str ) {
+    int i;
+    for ( i = 0; str[i] != '\0'; i++ ) {
+        if ( str[i] == '%' ) str[i] = '\n';
+        if ( str[i] == '_' ) str[i] = ' ';
+    }
+}
+
+void limpiar_entrada ( ) {
+    while ( getchar() != '\n' ) {}
+}
+
+void pedir_nickname ( struct Pdu * dgram ) {
+    printf("  Nickname: ");
+    scanf("%15s", dgram->nickname );             // Guardar los 15 caracteres
+    limpiar_entrada();                           // Eliminar del buffer loque haya
+}
+
+void pedir_username ( struct Pdu * dgram ) {
+    printf("  Username: ");
+    scanf("%15s", dgram->username );             // Guardar los 15 caracteres
+    limpiar_entrada();                           // Eliminar del buffer loque haya
+}
+
+void pedir_password ( struct Pdu * dgram ) {
+    printf("  Password: ");
+    scanf("%15s", dgram->password );             // Guardar los 15 caracteres
+    limpiar_entrada();                           // Eliminar del buffer loque haya
+}

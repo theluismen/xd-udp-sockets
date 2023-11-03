@@ -15,12 +15,20 @@
 /* Inclusio de fitxers .h propis del projecte */
 #include "sopor.h"
 
+int registrar ( struct Pdu * dgram ) {
+    FILE * users = fopen(REGIST_FILENAME, "a"); // a -> Añadir (append) lineas
+    int err = fprintf(users, "%s %s %s\n", dgram->nickname, dgram->username, dgram->md5paswd );
+    fclose(users);
+    return err;
+}
+
 int main ( int argc, char ** argv ) {
 
     if ( argc == 2 ) {
         /* Definim variables */
         struct sockaddr_in server_addr, client_addr;
-        socklen_t addr_size;
+        struct Pdu dgram;
+        socklen_t  addr_size;
         char buffer[BUFFER_SIZE];
         int bind_port, sock, binded;
         /* Fem la feina */
@@ -33,16 +41,32 @@ int main ( int argc, char ** argv ) {
             if ( binded >= 0 ) {
                 printf("[+] - Binded...\n");
 
-                /* Recibir datos */
-                bzero( buffer, BUFFER_SIZE );
-                recv_data( sock, buffer, &client_addr, &addr_size);
-                printf("[+] - Data Recv: %s\n", buffer);
+                while ( 1 ) {
+                    /* Recibir datos */
+                    bzero( buffer, BUFFER_SIZE );
+                    recv_data( sock, buffer, &client_addr, &addr_size);
+                    printf("[+] - Data Recv: %s\n", buffer);
 
-                /* Enviar datos de vuelta */
-                bzero( buffer, BUFFER_SIZE );
-                strcpy( buffer, "Tu puta madre jaja");
-                send_data( sock, buffer, &client_addr);
-                printf("[+] - Data Sent: %s\n", buffer);
+                    /* Procesar datos */
+                    sscanf( buffer, "%hd", &dgram.flag );
+                    switch ( dgram.flag ) {
+                        case PDU_FLAG_WELCOME_ASK:
+                            sprintf( buffer, "%hd %s", PDU_FLAG_WELCOME_MSG, WELCOME_MSG);
+                            break;;
+                        case PDU_FLAG_REGIST_ASK:
+                            sscanf( buffer, "%*d %15s %15s %16s", dgram.nickname, dgram.username, dgram.md5paswd );
+                            dgram.flag = PDU_FLAG_REGIST_OK;
+                            if ( registrar( &dgram ) < 0 ) {    // Error
+                                dgram.flag = PDU_FLAG_REGIST_ERR;
+                            }
+                            sprintf( buffer, "%hd", dgram.flag);
+                            break;;
+                    }
+
+                    /* Enviar datos de vuelta */
+                    send_data( sock, buffer, &client_addr );
+                    printf("[+] - Data Sent: %s\n", buffer);
+                }
             } else {
                 printf("[!] - No se pudo realizar el bind().\n");
             }

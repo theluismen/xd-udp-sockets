@@ -24,60 +24,67 @@ int registrar ( struct Pdu * dgram ) {
 
 int main ( int argc, char ** argv ) {
 
-    if ( argc == 2 ) {
-        /* Definim variables */
-        struct sockaddr_in server_addr, client_addr;
-        struct Pdu dgram;
-        socklen_t  addr_size;
-        char buffer[BUFFER_SIZE];
-        int bind_port, sock, binded;
-        /* Fem la feina */
-        bind_port = atoi( argv[1] );
-        sock      = init_sock();
-        if ( sock >= 0 ) {
-            printf("[+] - Socket creado ( :%d )...\n", bind_port);
-            init_addr( &server_addr, bind_port, LOCAL_IP);
-            binded = init_binding( sock, &server_addr );
-            if ( binded >= 0 ) {
-                printf("[+] - Binded...\n");
-
-                while ( 1 ) {
-                    /* Recibir datos */
-                    bzero( buffer, BUFFER_SIZE );
-                    recv_data( sock, buffer, &client_addr, &addr_size);
-                    printf("[+] - Data Recv: %s\n", buffer);
-
-                    /* Procesar datos */
-                    sscanf( buffer, "%hd", &dgram.flag );
-                    switch ( dgram.flag ) {
-                        case PDU_FLAG_WELCOME_ASK:
-                            sprintf( buffer, "%hd %s", PDU_FLAG_WELCOME_MSG, WELCOME_MSG);
-                            break;;
-                        case PDU_FLAG_REGIST_ASK:
-                            sscanf( buffer, "%*d %15s %15s %16s", dgram.nickname, dgram.username, dgram.md5paswd );
-                            dgram.flag = PDU_FLAG_REGIST_OK;
-                            if ( registrar( &dgram ) < 0 ) {    // Error
-                                dgram.flag = PDU_FLAG_REGIST_ERR;
-                            }
-                            sprintf( buffer, "%hd", dgram.flag);
-                            break;;
-                    }
-
-                    /* Enviar datos de vuelta */
-                    send_data( sock, buffer, &client_addr );
-                    printf("[+] - Data Sent: %s\n", buffer);
-                }
-            } else {
-                printf("[!] - No se pudo realizar el bind().\n");
-            }
-        } else {
-            printf("[!] - No se pudo crear el socket.\n");
-        }
-        /* Tanquem el socket */
-        close( sock );
-    } else {
+    /* Comprobar que se tiene el puerto de escucha */
+    if ( argc != 2 ) {
         msg_wrong_param( SERVER );
+        return 0;
     }
+
+    /* Definim variables */
+    struct sockaddr_in server_addr, client_addr;
+    struct Pdu dgram;
+    socklen_t  addr_size;
+    char buffer[BUFFER_SIZE];
+    int port, sock, bind;
+
+    /* Guardamos el puerto y creamos el socket */
+    port = atoi( argv[1] );
+    sock      = init_sock();
+    if ( sock < 0 ) {
+        printf("[!] - No se pudo crear el socket.\n");
+        return 0;
+    }
+
+    /* Si el socket se crea correctamente... */
+    printf("[+] - Socket creado ( :%d )...\n", port);
+    init_addr( &server_addr, port, LOCAL_IP);
+    bind = init_binding( sock, &server_addr );
+    if ( bind < 0 ) {
+        printf("[!] - No se pudo realizar el bind().\n");
+        return 0;
+    }
+
+    /* Bucle Principal del Servidor */
+    printf("[+] - Binded...\n");
+    while ( 1 ) {
+        /* Recibir datos */
+        bzero( buffer, BUFFER_SIZE );
+        recv_data( sock, buffer, &client_addr, &addr_size);
+        printf("[+] - Data Recv: %s\n", buffer);
+
+        /* Procesar datos */
+        sscanf( buffer, "%hd", &dgram.flag );
+        switch ( dgram.flag ) {
+            case PDU_FLAG_WELCOME_ASK:
+                sprintf( buffer, "%hd %s", PDU_FLAG_WELCOME_MSG, WELCOME_MSG);
+                break;;
+            case PDU_FLAG_REGIST_ASK:
+                sscanf( buffer, "%*d %15s %15s %16s", dgram.nickname, dgram.username, dgram.md5paswd );
+                dgram.flag = PDU_FLAG_REGIST_OK;
+                if ( registrar( &dgram ) < 0 ) {    // Error
+                    dgram.flag = PDU_FLAG_REGIST_ERR;
+                }
+                sprintf( buffer, "%hd", dgram.flag);
+                break;;
+        }
+
+        /* Enviar datos de vuelta */
+        send_data( sock, buffer, &client_addr );
+        printf("[+] - Data Sent: %s\n", buffer);
+    }
+
+    /* Tanquem el socket */
+    close( sock );
 
     return 0;
 }

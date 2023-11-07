@@ -1,3 +1,4 @@
 /bin/*
 /obj/*.o
 test.c
+/data/users.txt

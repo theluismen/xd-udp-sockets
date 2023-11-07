@@ -69,7 +69,6 @@ int main( int argc, char ** argv ) {
                     pedir_nickname( &dgram );
                     pedir_username( &dgram );
                     pedir_password( &dgram );
-                    md5String(dgram.password, dgram.md5paswd);  // Calculo el MD5
                     /* Preparar envio de datos y enviar */
                     sprintf( buffer, "%d %s %s %s", PDU_FLAG_REGIST_ASK, dgram.nickname, dgram.username, dgram.md5paswd); // Preparar buffer
                     send_data( sock, buffer, &addr);             // Enviar información

@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "sopor.h"
+#include "md5.h"
 
 /* Funciones Usadas por server.c */
 int  init_binding ( int sock, struct sockaddr_in * addr) {
@@ -68,7 +69,20 @@ void pedir_username ( struct Pdu * dgram ) {
 }
 
 void pedir_password ( struct Pdu * dgram ) {
-    printf("  Password: ");
-    scanf("%15s", dgram->password );             // Guardar los 15 caracteres
-    limpiar_entrada();                           // Eliminar del buffer loque haya
+    char password[PASSWORD_SIZE+1], password2[PASSWORD_SIZE+1];
+    int cmp;
+    do {
+        printf("  Password: ");
+        scanf("%15s", password );             // Guardar los 15 caracteres
+        limpiar_entrada();                    // Eliminar del buffer loque haya
+        printf("  Confirma: ");
+        scanf("%15s", password2 );            // Guardar los 15 caracteres
+        limpiar_entrada();                    // Eliminar del buffer loque haya
+        cmp = strcmp(password, password2);
+        if ( cmp != 0 ) {
+            printf("  Las contraseñas no coinciden: \n");
+        }
+    } while ( cmp != 0 );
+
+    md5String(password, dgram->md5paswd);
 }

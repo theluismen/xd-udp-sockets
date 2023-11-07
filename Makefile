@@ -10,7 +10,7 @@ PORT=6969
 	gcc -Iinc -c $< -o $@
 
 ./bin/server: ./obj/server.o ./obj/sopor.o
-	gcc $< ./obj/sopor.o -o $@
+	gcc $< ./obj/sopor.o ./obj/md5.o -o $@
 ./bin/client: ./obj/client.o ./obj/sopor.o ./obj/md5.o
 	gcc $< ./obj/sopor.o ./obj/md5.o -o $@
 

@@ -29,9 +29,9 @@ struct Pdu {
     short int flag;
     char nickname[NICKNAME_SIZE+1];
     char username[USERNAME_SIZE+1];
-    char password[PASSWORD_SIZE+1];
     uint8_t md5paswd[MD5_SIZE];
 };
+
 /* Prototipos de funciones para server.c y client.c */
 void init_addr ( struct sockaddr_in * server_addr, int p, char * ip );
 void msg_wrong_param ( int n );

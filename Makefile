@@ -4,7 +4,7 @@ PORT=6969
 	gcc -Iinc -c $< -o $@
 ./obj/client.o : ./src/client.c
 	gcc -Iinc -c $< -o $@
-./obj/sopor.o : ./src/sopor.c
+./obj/sopor.o : ./src/sopor.c ./obj/md5.o
 	gcc -Iinc -c $< -o $@
 ./obj/md5.o : ./src/md5.c
 	gcc -Iinc -c $< -o $@

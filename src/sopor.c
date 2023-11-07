@@ -84,5 +84,5 @@ void pedir_password ( struct Pdu * dgram ) {
         }
     } while ( cmp != 0 );
 
-    md5String(password, dgram->md5paswd);
+    md5String(password, dgram->md5paswd);     // Calcular md5 en el dgram
 }

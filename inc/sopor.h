@@ -11,7 +11,8 @@
 #define PDU_FLAG_WELCOME_MSG 1
 #define PDU_FLAG_REGIST_ASK  2
 #define PDU_FLAG_REGIST_OK   3
-#define PDU_FLAG_REGIST_ERR  3
+#define PDU_FLAG_REGIST_ERR  4
+#define PDU_FLAG_REGIST_DUP  5
 
 #define OPT_REG 1
 #define OPT_INI 2
@@ -41,7 +42,10 @@ void recv_data ( int sock, char * buffer, struct sockaddr_in * src_addr, socklen
 void send_data ( int sock, char * buffer, struct sockaddr_in * dest_addr );
 void decode_str ( char * str );
 void pedir_nickname ( struct Pdu * dgram );
+void pedir_nickname ( struct Pdu * dgram );
 void limpiar_entrada ( );
 void pedir_nickname ( struct Pdu * dgram );
 void pedir_username ( struct Pdu * dgram );
 void pedir_password ( struct Pdu * dgram );
+int registrar ( struct Pdu * dgram );
+int esta_registrado ( struct Pdu * dgram );

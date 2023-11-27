@@ -15,6 +15,28 @@ int  init_binding ( int sock, struct sockaddr_in * addr) {
     return bind( sock, ( struct sockaddr * ) addr, sizeof(*addr));
 }
 
+int registrar ( struct Pdu * dgram ) {
+    FILE * users = fopen(REGIST_FILENAME, "a"); // ab -> Añadir (append) lineas en binario
+    int err = fprintf(users, "%s %s %s\n", dgram->username, dgram->nickname, dgram->md5paswd );
+    // int err = fwrite( buffer, users);
+    fclose(users);
+    return err;
+}
+
+int esta_registrado ( struct Pdu * dgram ) {
+    FILE * users = fopen(REGIST_FILENAME, "r"); // r -> Leer
+    char username_aux[USERNAME_SIZE+1];
+    int esta = 0;
+
+    while ( ! esta && ! feof(users) ) {
+        fscanf(users, "%s %*s %*s\n", username_aux);
+        if ( strcmp(dgram->username, username_aux) == 0 ) {
+            esta = 1;
+        }
+    }
+    return esta;
+}
+
 /* Funciones Usadas por client.c */
 
 /* Funciones Usadas por server.c y client.c */
@@ -52,14 +74,24 @@ void decode_str ( char * str ) {
     }
 }
 
+void encode_str ( char * str ) {
+    int i;
+    for ( i = 0; str[i] != '\0' && str[i] != '\n'; i++ ) {
+        if ( str[i] == ' ' ) str[i] = '_';
+    }
+}
+
 void limpiar_entrada ( ) {
-    while ( getchar() != '\n' ) {}
+    while ( getchar() != '\n' ) {
+        printf("1" );
+    }
 }
 
 void pedir_nickname ( struct Pdu * dgram ) {
     printf("  Nickname: ");
-    scanf("%15s", dgram->nickname );             // Guardar los 15 caracteres
-    limpiar_entrada();                           // Eliminar del buffer loque haya
+    fgets(dgram->nickname, NICKNAME_SIZE+1, stdin); // Guardar los 15 caracteres (puede tener espacios)
+    limpiar_entrada();                              // Eliminar del buffer loque haya
+    encode_str(dgram->nickname);                    // codificar espacios
 }
 
 void pedir_username ( struct Pdu * dgram ) {

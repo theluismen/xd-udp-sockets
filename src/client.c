@@ -66,20 +66,26 @@ int main( int argc, char ** argv ) {
             switch ( opt ) {
                 case OPT_REG:
                     /* Pedir Info */
-                    pedir_nickname( &dgram );
                     pedir_username( &dgram );
+                    pedir_nickname( &dgram );
                     pedir_password( &dgram );
                     /* Preparar envio de datos y enviar */
-                    sprintf( buffer, "%d %s %s %s", PDU_FLAG_REGIST_ASK, dgram.nickname, dgram.username, dgram.md5paswd); // Preparar buffer
+                    sprintf( buffer, "%d %s %s %s", PDU_FLAG_REGIST_ASK, dgram.username, dgram.nickname, dgram.md5paswd); // Preparar buffer
                     send_data( sock, buffer, &addr);             // Enviar información
                     /* Recibir confirmacion de registro */
                     recv_data( sock, buffer, &addr, &addr_size);
                     sscanf( buffer, "%hd", &dgram.flag );
                     /* Mostrar resultado por pantalla */
-                    if ( dgram.flag == PDU_FLAG_REGIST_OK ) {
-                        printf("  Registro completado\n");
-                    } else {
-                        printf("  Registro NO Completado. Ocurrieron errores\n");
+                    switch ( dgram.flag ) {
+                        case PDU_FLAG_REGIST_OK:
+                            printf("  Registro completado\n");
+                            break;;
+                        case PDU_FLAG_REGIST_ERR:
+                            printf("  Registro NO Completado. Ocurrieron errores\n");
+                            break;;
+                        case PDU_FLAG_REGIST_DUP:
+                            printf("  Registro NO Completado. Username repetido\n");
+                            break;;
                     }
                     break;;
                 case OPT_INI:
@@ -88,6 +94,8 @@ int main( int argc, char ** argv ) {
                 case OPT_BYE:
                     bye = true;
                 break;;
+                default:
+                    printf("  Opcio invalida\n");
             }
         } while ( opt < 0 || opt > 2 || ! bye );
     }

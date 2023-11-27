@@ -15,13 +15,6 @@
 /* Inclusio de fitxers .h propis del projecte */
 #include "sopor.h"
 
-int registrar ( struct Pdu * dgram ) {
-    FILE * users = fopen(REGIST_FILENAME, "a"); // a -> Añadir (append) lineas
-    int err = fprintf(users, "%s %s %s\n", dgram->nickname, dgram->username, dgram->md5paswd );
-    fclose(users);
-    return err;
-}
-
 int main ( int argc, char ** argv ) {
 
     /* Comprobar que se tiene el puerto de escucha */
@@ -69,10 +62,14 @@ int main ( int argc, char ** argv ) {
                 sprintf( buffer, "%hd %s", PDU_FLAG_WELCOME_MSG, WELCOME_MSG);
                 break;;
             case PDU_FLAG_REGIST_ASK:
-                sscanf( buffer, "%*d %15s %15s %16s", dgram.nickname, dgram.username, dgram.md5paswd );
+                sscanf( buffer, "%*d %15s %15s %16s", dgram.username, dgram.nickname, dgram.md5paswd );
                 dgram.flag = PDU_FLAG_REGIST_OK;
-                if ( registrar( &dgram ) < 0 ) {    // Error
-                    dgram.flag = PDU_FLAG_REGIST_ERR;
+                if ( ! esta_registrado( &dgram ) ) {
+                    if ( registrar( &dgram ) < 0 ) {
+                        dgram.flag = PDU_FLAG_REGIST_ERR;
+                    }
+                } else {
+                    dgram.flag = PDU_FLAG_REGIST_DUP;
                 }
                 sprintf( buffer, "%hd", dgram.flag);
                 break;;

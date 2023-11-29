@@ -77,15 +77,17 @@ void encode_str ( char * str ) {
 }
 
 void limpiar_entrada ( ) {
-    while ( getchar() != '\n' ) {
-        printf("1" );
-    }
+    while ( getchar() != '\n' ) {}
 }
 
 void pedir_nickname ( struct Pdu * dgram ) {
     printf("  Nickname: ");
     fgets(dgram->nickname, NICKNAME_SIZE+1, stdin); // Guardar los 15 caracteres (puede tener espacios)
-    limpiar_entrada();                              // Eliminar del buffer loque haya
+    if ( strchr( dgram->nickname, '\n') == NULL ) {
+        limpiar_entrada();                          // Eliminar del buffer si es necesario
+    } else {
+        dgram->nickname[strlen(dgram->nickname) - 1] = '\0';
+    }
     encode_str(dgram->nickname);                    // codificar espacios
 }
 

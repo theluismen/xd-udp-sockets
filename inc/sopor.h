@@ -4,7 +4,6 @@
 #define BUFFER_SIZE 1024
 #define LOCAL_IP    "127.0.0.1"
 
-// #define REGIST_FILENAME "../data/users.txt"
 #define REGIST_FILENAME "./data/users.txt"
 
 #define PDU_FLAG_WELCOME_ASK 0
@@ -20,7 +19,6 @@
 #define PDU_FLAG_INITSE_ERR  8
 #define PDU_FLAG_INITSE_MID  9
 
-
 #define OPT_REG 1
 #define OPT_INI 2
 #define OPT_BYE 0
@@ -35,8 +33,8 @@
 
 struct Pdu {
     short int flag;
-    char nickname[NICKNAME_SIZE+1];
     char username[USERNAME_SIZE+1];
+    char nickname[NICKNAME_SIZE+1];
     unsigned char md5hexpaswd[MD5_SIZE*2];
 };
 

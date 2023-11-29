@@ -9,10 +9,17 @@
 
 #define PDU_FLAG_WELCOME_ASK 0
 #define PDU_FLAG_WELCOME_MSG 1
+
 #define PDU_FLAG_REGIST_ASK  2
 #define PDU_FLAG_REGIST_OK   3
 #define PDU_FLAG_REGIST_ERR  4
 #define PDU_FLAG_REGIST_DUP  5
+
+#define PDU_FLAG_INITSE_ASK  6
+#define PDU_FLAG_INITSE_OK   7
+#define PDU_FLAG_INITSE_ERR  8
+#define PDU_FLAG_INITSE_MID  9
+
 
 #define OPT_REG 1
 #define OPT_INI 2
@@ -30,7 +37,7 @@ struct Pdu {
     short int flag;
     char nickname[NICKNAME_SIZE+1];
     char username[USERNAME_SIZE+1];
-    uint8_t md5paswd[MD5_SIZE];
+    unsigned char md5hexpaswd[MD5_SIZE*2];
 };
 
 /* Prototipos de funciones para server.c y client.c */
@@ -46,6 +53,9 @@ void pedir_nickname ( struct Pdu * dgram );
 void limpiar_entrada ( );
 void pedir_nickname ( struct Pdu * dgram );
 void pedir_username ( struct Pdu * dgram );
+void pedir_passwdx2 ( struct Pdu * dgram );
 void pedir_password ( struct Pdu * dgram );
 int registrar ( struct Pdu * dgram );
 int esta_registrado ( struct Pdu * dgram );
+int existe_usuario ( struct Pdu * dgram );
+void to_md5_hex ( char * str, int str_size, char * md5hex );

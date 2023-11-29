@@ -17,21 +17,44 @@ int  init_binding ( int sock, struct sockaddr_in * addr) {
 
 int registrar ( struct Pdu * dgram ) {
     FILE * users = fopen(REGIST_FILENAME, "a"); // ab -> Añadir (append) lineas en binario
-    int err = fprintf(users, "%s %s %s\n", dgram->username, dgram->nickname, dgram->md5paswd );
+    int err = fprintf(users, "%s %s %s\n", dgram->username, dgram->nickname, dgram->md5hexpaswd );
     // int err = fwrite( buffer, users);
     fclose(users);
     return err;
 }
 
+int existe_usuario ( struct Pdu * dgram ) {
+    FILE * users = fopen(REGIST_FILENAME, "r"); // r -> Leer
+    char username_aux[USERNAME_SIZE+1];
+    int existe = 0;
+
+    if ( users != NULL ) {
+        while ( ! existe && ! feof(users) ) {
+            fscanf(users, "%s %*s %*s\n", username_aux);
+            if ( strcmp(dgram->username, username_aux) == 0 ) {
+                existe = 1;
+            }
+        }
+    }
+    return existe;
+}
+
 int esta_registrado ( struct Pdu * dgram ) {
     FILE * users = fopen(REGIST_FILENAME, "r"); // r -> Leer
     char username_aux[USERNAME_SIZE+1];
+    char md5paswd_aux[MD5_SIZE*2];
     int esta = 0;
 
-    while ( ! esta && ! feof(users) ) {
-        fscanf(users, "%s %*s %*s\n", username_aux);
-        if ( strcmp(dgram->username, username_aux) == 0 ) {
-            esta = 1;
+    if ( users != NULL ) {
+        while ( ! esta && ! feof(users) ) {
+            fscanf(users, "%s %s %s\n", username_aux, dgram->nickname, md5paswd_aux);
+            if ( strcmp(dgram->username, username_aux) == 0 ) {
+                if ( strcmp(dgram->md5hexpaswd, md5paswd_aux) == 0 ) {
+                    esta = 2;
+                } else {
+                    esta = 1;
+                }
+            }
         }
     }
     return esta;
@@ -100,8 +123,10 @@ void pedir_username ( struct Pdu * dgram ) {
     limpiar_entrada();                           // Eliminar del buffer loque haya
 }
 
-void pedir_password ( struct Pdu * dgram ) {
-    char password[PASSWORD_SIZE+1], password2[PASSWORD_SIZE+1];
+void pedir_passwdx2 ( struct Pdu * dgram ) {
+    char password [PASSWORD_SIZE+1];
+    char password2[PASSWORD_SIZE+1];
+    uint8_t md5paswd[MD5_SIZE];
     int cmp;
     do {
         printf("  Password: ");
@@ -116,5 +141,26 @@ void pedir_password ( struct Pdu * dgram ) {
         }
     } while ( cmp != 0 );
 
-    md5String(password, dgram->md5paswd);     // Calcular md5 en el dgram
+    md5String(password, md5paswd);     // Calcular md5 en el dgram
+    to_md5_hex(md5paswd, MD5_SIZE, dgram->md5hexpaswd);
+}
+
+void pedir_password ( struct Pdu * dgram ) {
+    char password[PASSWORD_SIZE+1];
+    uint8_t md5paswd[MD5_SIZE];
+    printf("  Password: ");
+    scanf("%15s", password );             // Guardar los 15 caracteres
+    limpiar_entrada();
+    md5String(password, md5paswd);        // Calcular md5 en el dgram
+    to_md5_hex(md5paswd, MD5_SIZE, dgram->md5hexpaswd);
+}
+
+void to_md5_hex ( char * str, int str_size, char * md5hex ) {
+    int i;
+    unsigned char n, m;
+    for ( i = 0; i < str_size; i++ ) {
+        n = ( str[i] & 0b11110000 ) >> 4;
+        m = str[i] & 0b00001111;
+        md5hex += sprintf(md5hex, "%x%x", n, m);
+    }
 }

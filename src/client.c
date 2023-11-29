@@ -68,9 +68,9 @@ int main( int argc, char ** argv ) {
                     /* Pedir Info */
                     pedir_username( &dgram );
                     pedir_nickname( &dgram );
-                    pedir_password( &dgram );
+                    pedir_passwdx2( &dgram );
                     /* Preparar envio de datos y enviar */
-                    sprintf( buffer, "%d %s %s %s", PDU_FLAG_REGIST_ASK, dgram.username, dgram.nickname, dgram.md5paswd); // Preparar buffer
+                    sprintf( buffer, "%d %s %s %s", PDU_FLAG_REGIST_ASK, dgram.username, dgram.nickname, dgram.md5hexpaswd); // Preparar buffer
                     send_data( sock, buffer, &addr);             // Enviar información
                     /* Recibir confirmacion de registro */
                     recv_data( sock, buffer, &addr, &addr_size);
@@ -89,7 +89,29 @@ int main( int argc, char ** argv ) {
                     }
                     break;;
                 case OPT_INI:
-
+                    /* Pedir Info */
+                    pedir_username( &dgram );
+                    pedir_password( &dgram );
+                    /* Preparar envio de datos y enviar */
+                    sprintf( buffer, "%d %s %s", PDU_FLAG_INITSE_ASK, dgram.username, dgram.md5hexpaswd); // Preparar buffer
+                    send_data( sock, buffer, &addr);             // Enviar información
+                    /* Recibir confirmacion de inicio de sesion */
+                    recv_data( sock, buffer, &addr, &addr_size);
+                    sscanf( buffer, "%hd", &dgram.flag );
+                    /* Mostrar resultado por pantalla */
+                    switch ( dgram.flag ) {
+                        case PDU_FLAG_INITSE_ERR: // No existe usuario
+                            printf("  Usuario desconocido\n");
+                            break;;
+                        case PDU_FLAG_INITSE_MID: // Existe usuario, contra incorrecta
+                            printf("  Contraseña incorrecta\n");
+                            break;;
+                        case PDU_FLAG_INITSE_OK: // Existe usuario, contra correcta
+                            sscanf( buffer, "%*d %s", dgram.nickname );
+                            decode_str(dgram.nickname);
+                            printf("  Hola %s !\n", dgram.nickname);
+                            break;;
+                    }
                 break;;
                 case OPT_BYE:
                     bye = true;

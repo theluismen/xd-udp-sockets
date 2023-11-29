@@ -62,9 +62,9 @@ int main ( int argc, char ** argv ) {
                 sprintf( buffer, "%hd %s", PDU_FLAG_WELCOME_MSG, WELCOME_MSG);
                 break;;
             case PDU_FLAG_REGIST_ASK:
-                sscanf( buffer, "%*d %15s %15s %16s", dgram.username, dgram.nickname, dgram.md5paswd );
+                sscanf( buffer, "%*d %15s %15s %32s", dgram.username, dgram.nickname, dgram.md5hexpaswd );
                 dgram.flag = PDU_FLAG_REGIST_OK;
-                if ( ! esta_registrado( &dgram ) ) {
+                if ( ! existe_usuario( &dgram ) ) {
                     if ( registrar( &dgram ) < 0 ) {
                         dgram.flag = PDU_FLAG_REGIST_ERR;
                     }
@@ -72,6 +72,21 @@ int main ( int argc, char ** argv ) {
                     dgram.flag = PDU_FLAG_REGIST_DUP;
                 }
                 sprintf( buffer, "%hd", dgram.flag);
+                break;;
+            case PDU_FLAG_INITSE_ASK:
+                sscanf( buffer, "%*d %15s %32s", dgram.username, dgram.md5hexpaswd );
+                switch ( esta_registrado( &dgram ) ) {
+                    case 0: // No existe usuario
+                        sprintf( buffer, "%hd", PDU_FLAG_INITSE_ERR);
+                        break;;
+                    case 1: // Existe usuario, contra incorrecta
+                        sprintf( buffer, "%hd", PDU_FLAG_INITSE_MID);
+                        break;;
+                    case 2:
+                        sprintf( buffer, "%hd %s", PDU_FLAG_INITSE_OK, dgram.nickname);
+                        break;;
+                }
+                esta_registrado( &dgram);
                 break;;
         }
 
